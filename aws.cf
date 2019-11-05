@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  Sample SQS queue with DLQ to be used by Lambda and act like a job that checks
+  if some external processing has been finished
+Parameters:
+  QueueNameParam:
+    Type: String
+    Default: tasks-queue
+    Description: Enter the name of the queue. DLQ will be created as the name you pass suffixed "-dlq"
+Resources:
+  MyTasksQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      DelaySeconds: 5
+      QueueName: !Ref QueueNameParam
+      VisibilityTimeout: 5
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt MyTasksDLQ.Arn
+        maxReceiveCount : 10
+      Tags:
+        - Key: created_by
+          Value: serverless-lambda-sqs-trigger
+  MyTasksDLQ:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: !Join ['-', [!Ref QueueNameParam, 'dlq']]
+      Tags:
+        - Key: created_by
+          Value: serverless-lambda-sqs-trigger
+Outputs:
+  QueueArn:
+    Description: ARN of the SQS Queue to be used in Serverless Framework YAML config file
+    Value: !GetAtt MyTasksQueue.Arn
+  QueueUrl:
+    Description: URL of the SQS Queue to be used in AWS SQS API
+    Value: !Ref MyTasksQueue

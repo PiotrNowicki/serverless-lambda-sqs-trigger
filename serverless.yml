@@ -1,0 +1,32 @@
+service: serverless-lambda-sqs-trigger
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  region: eu-central-1
+  memorySize: 128
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "sqs:SendMessage"
+        - "sqs:GetQueueUrl"
+      Resource: "arn:aws:sqs:eu-central-1:*:tasks-queue"
+  environment:
+    SQS_TASKS_URL: "PUT YOUR SQS TASK URL HERE"
+
+functions:
+  createTask:
+    handler: handler.createTask
+    events:
+      - http: POST /tasks
+
+  executeTask:
+    timeout: 5
+    handler: handler.executeTask
+    events:
+      - sqs:
+          arn: ${self:custom.sqsTasksArn}
+          batchSize: 1
+
+custom:
+  sqsTasksArn: "PUT YOUR SQS TASK ARN HERE"
