@@ -10,7 +10,7 @@ provider:
       Action:
         - "sqs:SendMessage"
         - "sqs:GetQueueUrl"
-      Resource: "arn:aws:sqs:eu-central-1:*:tasks-queue"
+      Resource: ${self:custom.sqsTasksArn}
   environment:
     SQS_TASKS_URL: "PUT YOUR SQS TASK URL HERE"
 
